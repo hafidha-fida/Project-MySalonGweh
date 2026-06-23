@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
-use App\Services\BookingService;
+use App\Contracts\BookingServiceInterface;
 
 class BookingController extends Controller
 {
-    protected BookingService $bookingService;
+    protected BookingServiceInterface $bookingService;
 
-    public function __construct(BookingService $bookingService)
-    {
+    public function __construct(
+        BookingServiceInterface $bookingService
+    ) {
         $this->bookingService = $bookingService;
     }
 

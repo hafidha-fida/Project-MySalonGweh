@@ -3,15 +3,16 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Contracts\BookingServiceInterface;
 use App\Services\BookingService;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(
-            BookingService::class,
-            fn () => new BookingService()
+        $this->app->bind(
+            BookingServiceInterface::class,
+            BookingService::class
         );
     }
 

@@ -2,20 +2,28 @@
 
 namespace App\Services;
 
+use App\Contracts\BookingServiceInterface;
 use App\Models\Booking;
 
-class BookingService
+class BookingService implements BookingServiceInterface
 {
     public function getAllBookings()
     {
-        return Booking::with(['user', 'service', 'payment'])->get();
+        return Booking::with([
+            'user',
+            'service',
+            'payment'
+        ])->get();
     }
 
     public function getUserBookings(int $userId)
     {
-        return Booking::with(['service', 'payment'])
-            ->where('user_id', $userId)
-            ->latest()
-            ->get();
+        return Booking::with([
+            'service',
+            'payment'
+        ])
+        ->where('user_id', $userId)
+        ->latest()
+        ->get();
     }
 }

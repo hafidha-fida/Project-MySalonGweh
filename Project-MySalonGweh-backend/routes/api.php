@@ -30,6 +30,12 @@ Route::get('/test', function () {
 | Service Container Test
 |--------------------------------------------------------------------------
 */
+Route::get('/midtrans-test', function () {
+    return response()->json([
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+    ]);
+});
 
 Route::get('/test-service', function (
     BookingService $bookingService
@@ -69,6 +75,16 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/services', [ServiceController::class, 'store']);
     Route::put('/services/{service}', [ServiceController::class, 'update']);
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
+    Route::middleware(['auth:sanctum', 'admin'])
+        ->get('/admin/dashboard', function () {
+
+            return response()->json([
+                'total_user' => \App\Models\User::count(),
+                'total_booking' => \App\Models\Booking::count(),
+                'total_payment' => \App\Models\Payment::count(),
+                'total_service' => \App\Models\Service::count()
+            ]);
+        });
 });
 
 /*
@@ -123,4 +139,12 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('payments', PaymentController::class);
+    Route::post(
+        '/payments/create/{booking}',
+        [PaymentController::class, 'createPayment']
+    );
+    Route::post(
+        '/payments/notification',
+        [PaymentController::class, 'notification']
+    );
 });
