@@ -12,9 +12,16 @@ class Booking extends Model
     protected $fillable = [
         'user_id',
         'service_id',
+
+        'customer_name',
+        'customer_phone',
+        'customer_email',
+
         'booking_date',
         'booking_time',
+
         'status',
+        'queue_number',
     ];
 
     public function user()

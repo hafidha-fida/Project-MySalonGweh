@@ -6,5 +6,5 @@ interface BookingServiceInterface
 {
     public function getAllBookings();
 
-    public function getUserBookings(int $userId);
+    public function getCustomerBookings(string $email);
 }

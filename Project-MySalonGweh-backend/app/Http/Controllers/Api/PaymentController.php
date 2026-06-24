@@ -19,14 +19,15 @@ class PaymentController extends Controller
     }
     public function index()
     {
-        $payments = Payment::with('booking')->get();
+        $payments = Payment::with([
+            'booking.service'
+        ])->latest()->get();
 
         return response()->json([
             'success' => true,
             'data' => $payments
         ]);
     }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -59,13 +60,16 @@ class PaymentController extends Controller
         $snapToken = $this->midtransService
             ->createTransaction($booking);
 
-        Payment::create([
-            'booking_id' => $booking->id,
-            'amount' => $booking->service->harga,
-            'payment_status' => 'pending',
-            'transaction_id' => 'BOOK-' . $booking->id
-        ]);
-
+        Payment::updateOrCreate(
+            [
+                'booking_id' => $booking->id
+            ],
+            [
+                'amount' => $booking->service->harga,
+                'payment_status' => 'pending',
+                'transaction_id' => 'BOOK-' . $booking->id
+            ]
+        );
         return response()->json([
             'success' => true,
             'snap_token' => $snapToken
@@ -110,10 +114,13 @@ class PaymentController extends Controller
         $transactionStatus = $notif->transaction_status;
         $orderId = $notif->order_id;
 
+        // ambil id booking dari BOOK-{id}
         $bookingId = str_replace('BOOK-', '', $orderId);
 
-        $payment = Payment::where('booking_id', $bookingId)
-            ->first();
+        $payment = Payment::where(
+            'booking_id',
+            $bookingId
+        )->first();
 
         if (!$payment) {
             return response()->json([
@@ -121,21 +128,63 @@ class PaymentController extends Controller
             ], 404);
         }
 
-        if ($transactionStatus == 'settlement') {
+        // pembayaran berhasil
+        if (
+            $transactionStatus == 'settlement' ||
+            $transactionStatus == 'capture'
+        ) {
 
             $payment->update([
                 'payment_status' => 'paid'
             ]);
 
-            $payment->booking->update([
-                'status' => 'confirmed'
+            $booking = $payment->booking;
+
+            if ($booking->queue_number == null) {
+
+                $totalQueue = Booking::whereDate(
+                    'booking_date',
+                    $booking->booking_date
+                )
+                    ->where('status', 'confirmed')
+                    ->count() + 1;
+
+                $queueNumber = 'A-' .
+                    str_pad(
+                        $totalQueue,
+                        3,
+                        '0',
+                        STR_PAD_LEFT
+                    );
+
+                $booking->update([
+                    'status' => 'confirmed',
+                    'queue_number' => $queueNumber
+                ]);
+            }
+        }
+
+        // pending
+        if ($transactionStatus == 'pending') {
+
+            $payment->update([
+                'payment_status' => 'pending'
             ]);
         }
 
-        if ($transactionStatus == 'expire') {
+        // gagal
+        if (
+            $transactionStatus == 'expire' ||
+            $transactionStatus == 'cancel' ||
+            $transactionStatus == 'deny'
+        ) {
 
             $payment->update([
                 'payment_status' => 'failed'
+            ]);
+
+            $payment->booking->update([
+                'status' => 'cancelled'
             ]);
         }
 

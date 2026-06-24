@@ -18,10 +18,10 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'role' => 'customer',
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'customer',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -43,10 +43,15 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (
+            !$user ||
+            !Hash::check($validated['password'], $user->password) ||
+            $user->role !== 'admin'
+        ) {
+
             return response()->json([
                 'success' => false,
-                'message' => 'Email atau password salah',
+                'message' => 'Akses hanya untuk admin',
             ], 401);
         }
 

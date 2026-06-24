@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Models\Service;
 use App\Models\Payment;
+use App\Models\Booking;
 
 use App\Services\BookingService;
 
@@ -12,34 +13,45 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\AdminController;
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes
+| TEST API
 |--------------------------------------------------------------------------
 */
 
 Route::get('/test', function () {
     return response()->json([
+        'success' => true,
         'message' => 'API MySalonGweh berjalan'
     ]);
 });
 
 /*
 |--------------------------------------------------------------------------
-| Service Container Test
+| MIDTRANS TEST
 |--------------------------------------------------------------------------
 */
+
 Route::get('/midtrans-test', function () {
+
     return response()->json([
         'server_key' => env('MIDTRANS_SERVER_KEY'),
         'client_key' => env('MIDTRANS_CLIENT_KEY'),
     ]);
 });
 
+/*
+|--------------------------------------------------------------------------
+| SERVICE CONTAINER TEST
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/test-service', function (
     BookingService $bookingService
 ) {
+
     return response()->json([
         'success' => true,
         'data' => $bookingService->getAllBookings()
@@ -48,103 +60,191 @@ Route::get('/test-service', function (
 
 /*
 |--------------------------------------------------------------------------
-| Authentication
+| AUTHENTICATION (ADMIN ONLY)
 |--------------------------------------------------------------------------
 */
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post(
+    '/register',
+    [AuthController::class, 'register']
+);
+
+Route::post(
+    '/login',
+    [AuthController::class, 'login']
+);
 
 /*
 |--------------------------------------------------------------------------
-| Public Services
+| PUBLIC SERVICES
 |--------------------------------------------------------------------------
 */
 
-Route::get('/services', [ServiceController::class, 'index']);
-Route::get('/services/{service}', [ServiceController::class, 'show']);
+Route::get(
+    '/services',
+    [ServiceController::class, 'index']
+);
+
+Route::get(
+    '/services/{service}',
+    [ServiceController::class, 'show']
+);
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| PUBLIC BOOKING (TANPA LOGIN)
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+Route::post(
+    '/bookings',
+    [BookingController::class, 'store']
+);
 
-    Route::post('/services', [ServiceController::class, 'store']);
-    Route::put('/services/{service}', [ServiceController::class, 'update']);
-    Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
-    Route::middleware(['auth:sanctum', 'admin'])
-        ->get('/admin/dashboard', function () {
-
-            return response()->json([
-                'total_user' => \App\Models\User::count(),
-                'total_booking' => \App\Models\Booking::count(),
-                'total_payment' => \App\Models\Payment::count(),
-                'total_service' => \App\Models\Service::count()
-            ]);
-        });
-});
+Route::get(
+    '/bookings/{booking}',
+    [BookingController::class, 'show']
+);
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated User Routes
+| CEK BOOKING BERDASARKAN EMAIL
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/customer/bookings/{email}',
+    [BookingController::class, 'customerBookings']
+);
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC PAYMENT
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/payments/create/{booking}',
+    [PaymentController::class, 'createPayment']
+);
+
+Route::get(
+    '/payments',
+    [PaymentController::class, 'index']
+);
+
+/*
+|--------------------------------------------------------------------------
+| MIDTRANS WEBHOOK
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/payments/notification',
+    [PaymentController::class, 'notification']
+);
+
+/*
+|--------------------------------------------------------------------------
+| AUTHENTICATED ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | User Profile
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/profile', [AuthController::class, 'profile']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/dashboard', function (Request $request) {
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'total_booking' => $request->user()->bookings()->count(),
-                'total_payment' => Payment::count(),
-                'total_service' => Service::count(),
-            ]
-        ]);
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Booking
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/my-bookings', [BookingController::class, 'myBookings']);
-
-    Route::apiResource('bookings', BookingController::class);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Payment
-    |--------------------------------------------------------------------------
-    */
-
-    Route::apiResource('payments', PaymentController::class);
-    Route::post(
-        '/payments/create/{booking}',
-        [PaymentController::class, 'createPayment']
+    Route::get(
+        '/profile',
+        [AuthController::class, 'profile']
     );
+
     Route::post(
-        '/payments/notification',
-        [PaymentController::class, 'notification']
+        '/logout',
+        [AuthController::class, 'logout']
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth:sanctum',
+    'admin'
+])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN DASHBOARD
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/admin/dashboard',
+        [AdminController::class, 'dashboard']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | SERVICE MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/services',
+        [ServiceController::class, 'store']
+    );
+
+    Route::put(
+        '/services/{service}',
+        [ServiceController::class, 'update']
+    );
+
+    Route::delete(
+        '/services/{service}',
+        [ServiceController::class, 'destroy']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | BOOKING MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/admin/bookings',
+        [BookingController::class, 'index']
+    );
+
+    Route::put(
+        '/admin/bookings/{booking}',
+        [BookingController::class, 'update']
+    );
+
+    Route::delete(
+        '/admin/bookings/{booking}',
+        [BookingController::class, 'destroy']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAYMENT MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/admin/payments',
+        [PaymentController::class, 'index']
+    );
+
+    Route::put(
+        '/admin/payments/{payment}',
+        [PaymentController::class, 'update']
+    );
+
+    Route::delete(
+        '/admin/payments/{payment}',
+        [PaymentController::class, 'destroy']
     );
 });

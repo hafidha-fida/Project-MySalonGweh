@@ -10,20 +10,21 @@ class BookingService implements BookingServiceInterface
     public function getAllBookings()
     {
         return Booking::with([
-            'user',
             'service',
             'payment'
-        ])->get();
+        ])
+            ->latest()
+            ->get();
     }
 
-    public function getUserBookings(int $userId)
+    public function getCustomerBookings(string $email)
     {
         return Booking::with([
             'service',
             'payment'
         ])
-        ->where('user_id', $userId)
-        ->latest()
-        ->get();
+            ->where('customer_email', $email)
+            ->latest()
+            ->get();
     }
 }

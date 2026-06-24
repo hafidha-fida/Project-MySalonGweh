@@ -10,21 +10,26 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('payments', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::create('payments', function (Blueprint $table) {
 
-        $table->foreignId('booking_id')->constrained()->onDelete('cascade');
+            $table->id();
 
-        $table->integer('amount');
+            $table->foreignId('booking_id')
+                ->constrained()
+                ->onDelete('cascade');
 
-        $table->string('payment_status')->default('Pending');
+            $table->integer('amount');
 
-        $table->string('transaction_id')->nullable();
+            $table->string('payment_status')
+                ->default('pending');
 
-        $table->timestamps();
-    });
-}
+            $table->string('transaction_id')
+                ->nullable();
+
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.
