@@ -15,6 +15,7 @@ import AdminPayments from "../pages/AdminPayments";
 // Layout
 import AdminLayout from "../layouts/AdminLayout";
 import AdminLogin from "../pages/AdminLogin";
+import Success from "../pages/Succes";
 
 export const router = createBrowserRouter([
   {
@@ -28,7 +29,22 @@ export const router = createBrowserRouter([
   },
 
   {
+    path: "/booking/:id",
+    element: <Booking />,
+  },
+
+  {
+    path: "/success/:id",
+    element: <Success />,
+  },
+
+  {
     path: "/admin/login",
+    element: <AdminLogin />,
+  },
+
+  {
+    path: "/admin-login",
     element: <AdminLogin />,
   },
 

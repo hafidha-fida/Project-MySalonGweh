@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import api from "../api/axios";
 
 function Booking() {
+  const { id } = useParams();
   const [services, setServices] = useState([]);
 
   const [customerName, setCustomerName] = useState("");
@@ -14,7 +16,10 @@ function Booking() {
 
   useEffect(() => {
     getServices();
-  }, []);
+    if (id) {
+      setServiceId(id);
+    }
+  }, [id]);
 
   const getServices = async () => {
     try {

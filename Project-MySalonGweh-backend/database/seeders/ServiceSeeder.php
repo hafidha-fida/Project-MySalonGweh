@@ -9,7 +9,7 @@ class ServiceSeeder extends Seeder
 {
     public function run(): void
     {
-        Service::insert([
+        $services = [
             [
                 'nama_layanan' => 'Hair Cut',
                 'harga' => 50000,
@@ -28,6 +28,13 @@ class ServiceSeeder extends Seeder
                 'durasi' => 60,
                 'deskripsi' => 'Perawatan rambut'
             ]
-        ]);
+        ];
+
+        foreach ($services as $service) {
+            Service::updateOrCreate(
+                ['nama_layanan' => $service['nama_layanan']],
+                $service
+            );
+        }
     }
 }
