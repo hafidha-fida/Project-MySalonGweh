@@ -3,3 +3,5 @@ node_modules/
 vendor/
 .git/
 Project-MySalonGweh-backend/bootstrap/cache/*.php
+Project-MySalonGweh-backend/vendor/
+Project-MySalonGweh-frontend/node_modules/
