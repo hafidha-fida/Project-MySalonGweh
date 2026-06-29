@@ -29,6 +29,9 @@ RUN composer install \
 # Copy application files from backend subdirectory
 COPY Project-MySalonGweh-backend/ .
 
+# Clear any cached bootstrap files (to prevent class not found errors from build cache)
+RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php
+
 # Generate optimized autoloader and run post-autoload-dump scripts now that artisan is copied
 RUN composer dump-autoload --optimize --no-dev
 
