@@ -35,9 +35,7 @@ RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/ca
 # Generate optimized autoloader and run post-autoload-dump scripts now that artisan is copied
 RUN composer dump-autoload --optimize --no-dev
 
-# Cache Laravel config and routes
-RUN php artisan config:cache || true
-RUN php artisan route:cache || true
+# Cache Laravel view files (safe for build-time)
 RUN php artisan view:cache || true
 
 # Expose Railway port
