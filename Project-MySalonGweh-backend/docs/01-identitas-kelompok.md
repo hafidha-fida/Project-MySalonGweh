@@ -9,6 +9,7 @@
 **Jumlah Anggota:** 3 orang
 
 **Repositori:** https://github.com/hafidha-fida/Project-MySalonGweh
+**URL:** https://project-mysalongweh-frontend.vercel.app/
 
 ---
 
