@@ -19,14 +19,18 @@ WORKDIR /app
 # Copy composer files from backend subdirectory
 COPY Project-MySalonGweh-backend/composer.json Project-MySalonGweh-backend/composer.lock ./
 
-# Install PHP dependencies
+# Install PHP dependencies without running scripts
 RUN composer install \
     --no-dev \
-    --optimize-autoloader \
+    --no-scripts \
+    --no-autoloader \
     --no-interaction
 
 # Copy application files from backend subdirectory
 COPY Project-MySalonGweh-backend/ .
+
+# Generate optimized autoloader and run post-autoload-dump scripts now that artisan is copied
+RUN composer dump-autoload --optimize --no-dev
 
 # Cache Laravel config and routes
 RUN php artisan config:cache || true
